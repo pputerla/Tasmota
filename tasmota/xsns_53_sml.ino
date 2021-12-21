@@ -486,8 +486,6 @@ const uint8_t meter[]=
 double meter_vars[SML_MAX_VARS];
 // calulate deltas
 #define MAX_DVARS MAX_METERS*2
-double dvalues[MAX_DVARS];
-uint32_t dtimes[MAX_DVARS];
 uint8_t meters_used;
 uint8_t dvalid[SML_MAX_VARS];
 
@@ -1566,14 +1564,8 @@ void SML_Decode(uint8_t index) {
           uint8_t ind = atoi(mp);
           while (*mp >= '0' && *mp <= '9') mp++;
           if (ind < 1 || ind > SML_MAX_VARS) ind = 1;
-          uint32_t delay = atoi(mp) * 1000;
-          uint32_t dtime = millis() - dtimes[dindex];
-          if (dtime > delay) {
-            // calc difference
-            dtimes[dindex] = millis();
-            double vdiff = meter_vars[ind - 1] - dvalues[dindex];
-            dvalues[dindex] = meter_vars[ind - 1];
-            double dres = (double)360000.0 / ((double)sml_counters[ind - 1].sml_cnt_derivative_diff / 10000.0);
+          if (sml_counters[ind - 1].sml_cnt_derivative_diff>0) {
+            double dres = (double)1000000.0 / (double)sml_counters[ind - 1].sml_cnt_derivative_diff;
 #ifdef USE_SML_MEDIAN_FILTER
             if (meter_desc_p[mindex].flag & 16) {
               meter_vars[vindex] = sml_median(&sml_mf[vindex], dres);
@@ -2524,7 +2516,8 @@ init10:
   for (byte i = 0; i < MAX_COUNTERS; i++) {
       RtcSettings.pulse_counter[i]=Settings->pulse_counter[i];
       sml_counters[i].sml_cnt_last_ts=millis();
-      sml_counters[i].sml_cnt_derivative_last_millis=millis();
+      sml_counters[i].sml_cnt_derivative_last_millis=micros();
+      sml_counters[i].sml_cnt_derivative_diff=0;
   }
   uint32_t uart_index=2;
   for (uint8_t meters=0; meters<meters_used; meters++) {
