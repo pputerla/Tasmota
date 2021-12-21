@@ -1554,7 +1554,7 @@ void SML_Decode(uint8_t index) {
             dtimes[dindex] = millis();
             double vdiff = meter_vars[ind - 1] - dvalues[dindex];
             dvalues[dindex] = meter_vars[ind - 1];
-            double dres = (double)360000.0 * vdiff / ((double)dtime / 10000.0);
+            double dres = (double)360000.0 / ((double)sml_counters[ind - 1].sml_cnt_derivative_diff / 10000.0);
 #ifdef USE_SML_MEDIAN_FILTER
             if (meter_desc_p[mindex].flag & 16) {
               meter_vars[vindex] = sml_median(&sml_mf[vindex], dres);
@@ -2162,6 +2162,8 @@ struct SML_COUNTER {
   uint32_t sml_counter_ltime;
   uint16_t sml_debounce;
   uint8_t sml_cnt_updated;
+  uint32_t sml_cnt_derivative_diff;
+  uint32_t sml_cnt_derivative_last_millis;
 
 #ifdef ANALOG_OPTO_SENSOR
   int16_t ana_curr;
@@ -2192,6 +2194,8 @@ uint32_t debounce_time;
   if bitRead(sml_counter_pinstate, index) {
     // falling edge
     RtcSettings.pulse_counter[index]++;
+    sml_counters[index].sml_cnt_derivative_diff = millis() - sml_counters[index].sml_cnt_derivative_last_millis;
+    sml_counters[index].sml_cnt_derivative_last_millis = millis();
     sml_counters[index].sml_cnt_updated=1;
   }
   sml_counters[index].sml_counter_ltime = time;
@@ -2516,10 +2520,11 @@ next_line:
 init10:
   typedef void (*function)();
   uint8_t cindex=0;
-  // preloud counters
+  // preload counters
   for (byte i = 0; i < MAX_COUNTERS; i++) {
       RtcSettings.pulse_counter[i]=Settings->pulse_counter[i];
       sml_counters[i].sml_cnt_last_ts=millis();
+      sml_counters[i].sml_cnt_derivative_last_millis=millis();
   }
   uint32_t uart_index=2;
   for (uint8_t meters=0; meters<meters_used; meters++) {
