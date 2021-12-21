@@ -1436,6 +1436,25 @@ uint32_t vbus_get_septet(uint8_t *cp) {
   return result;
 }
 
+struct SML_COUNTER {
+  uint8_t sml_cnt_debounce;
+  uint8_t sml_cnt_old_state;
+  uint32_t sml_cnt_last_ts;
+  uint32_t sml_counter_ltime;
+  uint16_t sml_debounce;
+  uint8_t sml_cnt_updated;
+  uint32_t sml_cnt_derivative_diff;
+  uint32_t sml_cnt_derivative_last_millis;
+
+#ifdef ANALOG_OPTO_SENSOR
+  int16_t ana_curr;
+  int16_t ana_max;
+  int16_t ana_min;
+  int16_t ana_cmpl;
+  int16_t ana_cmph;
+#endif
+} sml_counters[MAX_COUNTERS];
+
 
 void SML_Decode(uint8_t index) {
   const char *mp=(const char*)meter_p;
@@ -2154,25 +2173,6 @@ void SML_Show(boolean json) {
 #endif  // USE_DOMOTICZ
 
 }
-
-struct SML_COUNTER {
-  uint8_t sml_cnt_debounce;
-  uint8_t sml_cnt_old_state;
-  uint32_t sml_cnt_last_ts;
-  uint32_t sml_counter_ltime;
-  uint16_t sml_debounce;
-  uint8_t sml_cnt_updated;
-  uint32_t sml_cnt_derivative_diff;
-  uint32_t sml_cnt_derivative_last_millis;
-
-#ifdef ANALOG_OPTO_SENSOR
-  int16_t ana_curr;
-  int16_t ana_max;
-  int16_t ana_min;
-  int16_t ana_cmpl;
-  int16_t ana_cmph;
-#endif
-} sml_counters[MAX_COUNTERS];
 
 uint8_t sml_counter_pinstate;
 
