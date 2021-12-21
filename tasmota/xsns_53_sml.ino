@@ -2194,8 +2194,8 @@ uint32_t debounce_time;
   if bitRead(sml_counter_pinstate, index) {
     // falling edge
     RtcSettings.pulse_counter[index]++;
-    sml_counters[index].sml_cnt_derivative_diff = millis() - sml_counters[index].sml_cnt_derivative_last_millis;
-    sml_counters[index].sml_cnt_derivative_last_millis = millis();
+    sml_counters[index].sml_cnt_derivative_diff = time - sml_counters[index].sml_cnt_derivative_last_millis;
+    sml_counters[index].sml_cnt_derivative_last_millis = time;
     sml_counters[index].sml_cnt_updated=1;
   }
   sml_counters[index].sml_counter_ltime = time;
