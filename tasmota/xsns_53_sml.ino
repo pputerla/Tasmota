@@ -2186,7 +2186,8 @@ uint32_t debounce_time;
   if bitRead(sml_counter_pinstate, index) {
     // falling edge
     RtcSettings.pulse_counter[index]++;
-    sml_counters[index].sml_cnt_derivative_diff = time - sml_counters[index].sml_cnt_derivative_last_millis;
+    if(sml_counters[index].sml_cnt_derivative_last_millis>0)
+      sml_counters[index].sml_cnt_derivative_diff = time - sml_counters[index].sml_cnt_derivative_last_millis;
     sml_counters[index].sml_cnt_derivative_last_millis = time;
     sml_counters[index].sml_cnt_updated=1;
   }
@@ -2516,7 +2517,7 @@ init10:
   for (byte i = 0; i < MAX_COUNTERS; i++) {
       RtcSettings.pulse_counter[i]=Settings->pulse_counter[i];
       sml_counters[i].sml_cnt_last_ts=millis();
-      sml_counters[i].sml_cnt_derivative_last_millis=micros();
+      sml_counters[i].sml_cnt_derivative_last_millis=0;
       sml_counters[i].sml_cnt_derivative_diff=0;
   }
   uint32_t uart_index=2;
